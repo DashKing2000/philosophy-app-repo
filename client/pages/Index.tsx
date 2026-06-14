@@ -1,9 +1,39 @@
-import { Link } from "react-router-dom";
-import { BookOpen, BarChart3 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BookOpen, BarChart3, LogOut } from "lucide-react";
 
 export default function Index() {
+  const navigate = useNavigate();
+  const currentUser = localStorage.getItem("currentUser");
+  const user = currentUser ? JSON.parse(currentUser) : null;
+
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    sessionStorage.removeItem("authToken");
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BookOpen className="w-6 h-6 text-blue-600" />
+            <span className="font-bold text-lg text-gray-900">Philosophy CBT</span>
+          </div>
+          <div className="flex items-center gap-4">
+            {user && <span className="text-sm text-gray-600">Welcome, <strong>{user.email}</strong></span>}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              Log Out
+            </button>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-6xl mx-auto px-4 py-20">
         {/* Header */}
         <div className="text-center mb-16">

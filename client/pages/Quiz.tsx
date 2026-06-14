@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle } from "lucide-react";
 import { questionBank } from "@/data/questionBank";
 
 interface QuizQuestion {
@@ -17,6 +17,7 @@ export default function Quiz() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [quizConfig, setQuizConfig] = useState({
     session: "all",
     numQuestions: 20,
@@ -72,7 +73,7 @@ export default function Quiz() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit();
+          submitQuizConfirmed();
           return 0;
         }
         return prev - 1;
@@ -121,9 +122,11 @@ export default function Quiz() {
     setCurrentIndex(index);
   };
 
-  const handleSubmit = () => {
-    if (!confirm("Are you sure you want to submit the quiz?")) return;
+  const handleSubmitClick = () => {
+    setShowConfirmation(true);
+  };
 
+  const submitQuizConfirmed = () => {
     let score = 0;
     currentQuestions.forEach((q, idx) => {
       if (userAnswers[idx] === q.correctAnswer) {
@@ -147,13 +150,17 @@ export default function Quiz() {
     navigate("/results");
   };
 
+  const handleCancelSubmit = () => {
+    setShowConfirmation(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-          {/* Header */}
+          {/* Header with Controls at Top */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div>
                 <p className="text-blue-100 text-sm font-medium">
                   Question {currentIndex + 1} of {currentQuestions.length}
@@ -175,13 +182,41 @@ export default function Quiz() {
             </div>
 
             {/* Progress bar */}
-            <div className="mt-4 bg-blue-900 rounded-full h-2 overflow-hidden">
+            <div className="bg-blue-900 rounded-full h-2 overflow-hidden mb-6">
               <div
                 className="bg-white h-full transition-all duration-300"
                 style={{
                   width: `${((currentIndex + 1) / currentQuestions.length) * 100}%`,
                 }}
               ></div>
+            </div>
+
+            {/* Top Controls */}
+            <div className="flex gap-4">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Previous
+              </button>
+
+              <button
+                onClick={handleSubmitClick}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
+              >
+                <Send className="w-5 h-5" />
+                Submit Quiz
+              </button>
+
+              <button
+                onClick={handleNext}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
+              >
+                {currentIndex === currentQuestions.length - 1 ? "Finish" : "Next"}
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
@@ -240,7 +275,7 @@ export default function Quiz() {
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 text-sm mb-8">
+            <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-blue-600 rounded"></div>
                 <span className="text-gray-600">Current</span>
@@ -255,36 +290,49 @@ export default function Quiz() {
               </div>
             </div>
           </div>
-
-          {/* Controls */}
-          <div className="bg-white border-t border-gray-200 p-8 flex gap-4">
-            <button
-              onClick={handlePrev}
-              disabled={currentIndex === 0}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Previous
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-lg"
-            >
-              <Send className="w-5 h-5" />
-              Submit Quiz
-            </button>
-
-            <button
-              onClick={handleNext}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
-            >
-              {currentIndex === currentQuestions.length - 1 ? "Finish" : "Next"}
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-sm w-full overflow-hidden animate-fade-in">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle className="w-8 h-8" />
+                <h3 className="text-xl font-bold">Submit Quiz?</h3>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-700 font-medium mb-6">
+                Are you sure you want to submit the quiz? You will be taken to the results page and cannot return to edit your answers.
+              </p>
+
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <span className="font-semibold">Questions answered:</span> {Object.keys(userAnswers).length} of {currentQuestions.length}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border-t border-gray-200 p-6 flex gap-4">
+              <button
+                onClick={handleCancelSubmit}
+                className="flex-1 px-4 py-3 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                No, Keep Answering
+              </button>
+              <button
+                onClick={submitQuizConfirmed}
+                className="flex-1 px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Yes, Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

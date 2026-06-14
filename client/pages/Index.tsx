@@ -13,52 +13,6 @@ export default function Index() {
               Philosophy <span className="text-blue-600">CBT</span>
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Master your philosophy studies with our comprehensive computer-based practice system. 
-            Featuring 900+ questions, 8000+ combinations, and intelligent learning tracking.
-          </p>
-        </div>
-
-        {/* Main Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {/* Feature 1 */}
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">📚</span>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              15 Study Sessions
-            </h3>
-            <p className="text-gray-600">
-              Comprehensive coverage of all philosophy topics from conception to societal relevance.
-            </p>
-          </div>
-
-          {/* Feature 2 */}
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">🎯</span>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              900+ Questions
-            </h3>
-            <p className="text-gray-600">
-              Extensive question bank with intelligent randomization for endless practice combinations.
-            </p>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <span className="text-2xl">⏱️</span>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Flexible Timing
-            </h3>
-            <p className="text-gray-600">
-              Set your own pace with 5-120 minute sessions or enable complete randomness mode.
-            </p>
-          </div>
         </div>
 
         {/* CTA Buttons */}

@@ -41,7 +41,7 @@ export default function QuizSetup() {
 
   const handleStartQuiz = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate inputs
     if (numQuestions < 10 || numQuestions > 60) {
       alert("Number of questions must be between 10 and 60");
@@ -63,7 +63,7 @@ export default function QuizSetup() {
       })
     );
 
-    navigate("/quiz");
+    navigate("/quiz/start");
   };
 
   return (

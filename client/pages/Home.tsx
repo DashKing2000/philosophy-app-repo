@@ -1,7 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BookOpen, BarChart3, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function Index() {
+export default function Home() {
   const navigate = useNavigate();
   const currentUser = localStorage.getItem("currentUser");
   const user = currentUser ? JSON.parse(currentUser) : null;
@@ -9,7 +10,7 @@ export default function Index() {
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
     sessionStorage.removeItem("authToken");
-    navigate("/");
+    window.location.reload();
   };
 
   return (
@@ -17,19 +18,40 @@ export default function Index() {
       {/* Navbar */}
       <nav className="bg-white shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-3">
             <BookOpen className="w-6 h-6 text-blue-600" />
             <span className="font-bold text-lg text-gray-900">Philosophy CBT</span>
-          </Link>
+          </div>
           <div className="flex items-center gap-4">
-            {user && <span className="text-sm text-gray-600">Welcome, <strong>{user.email}</strong></span>}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
-            >
-              <LogOut className="w-4 h-4" />
-              Log Out
-            </button>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-600">
+                  Welcome, <strong>{user.email}</strong>
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -43,24 +65,45 @@ export default function Index() {
               Philosophy <span className="text-blue-600">CBT</span>
             </h1>
           </div>
-        </div>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            Master your philosophy studies with our comprehensive computer-based practice system. 
+            Practice with 900+ questions across all 15 philosophy topics, get instant feedback, and track your progress.
+          </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
-          <Link
-            to="/quiz"
-            className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-lg"
-          >
-            <BookOpen className="w-5 h-5 mr-2" />
-            Start Practice
-          </Link>
-          <Link
-            to="/history"
-            className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors shadow-lg text-lg"
-          >
-            <BarChart3 className="w-5 h-5 mr-2" />
-            View History
-          </Link>
+          {user ? (
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-lg"
+              >
+                <BookOpen className="w-5 h-5 mr-2" />
+                Start Practice
+              </Link>
+              <Link
+                to="/history"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors shadow-lg text-lg"
+              >
+                <BarChart3 className="w-5 h-5 mr-2" />
+                View History
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-lg"
+              >
+                <BookOpen className="w-5 h-5 mr-2" />
+                Start Learning Now
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors shadow-lg text-lg"
+              >
+                Create Free Account
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Key Stats */}

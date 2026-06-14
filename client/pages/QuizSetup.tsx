@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, Settings, BookOpen, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SESSIONS = [
@@ -66,17 +66,32 @@ export default function QuizSetup() {
     navigate("/quiz/start");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    sessionStorage.removeItem("authToken");
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <BookOpen className="w-6 h-6 text-blue-600" />
+            <span className="font-bold text-lg text-gray-900">Philosophy CBT</span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+          >
+            <LogOut className="w-4 h-4" />
+            Log Out
+          </button>
+        </div>
+      </nav>
+
       <div className="max-w-2xl mx-auto px-4 py-12">
-        {/* Header */}
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8 font-medium"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Link>
 
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
           {/* Title */}

@@ -41,7 +41,7 @@ export default function Index() {
           <div className="grid md:grid-cols-2 gap-8">
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white font-bold">
                   ✓
                 </div>
               </div>
@@ -57,7 +57,7 @@ export default function Index() {
 
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white font-bold">
                   ✓
                 </div>
               </div>
@@ -73,7 +73,7 @@ export default function Index() {
 
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white font-bold">
                   ✓
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default function Index() {
 
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white font-bold">
                   ✓
                 </div>
               </div>

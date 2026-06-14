@@ -192,30 +192,13 @@ export default function Quiz() {
             </div>
 
             {/* Top Controls */}
-            <div className="flex gap-4">
-              <button
-                onClick={handlePrev}
-                disabled={currentIndex === 0}
-                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Previous
-              </button>
-
+            <div className="flex gap-4 justify-center">
               <button
                 onClick={handleSubmitClick}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
+                className="flex items-center justify-center gap-2 px-8 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
               >
                 <Send className="w-5 h-5" />
                 Submit Quiz
-              </button>
-
-              <button
-                onClick={handleNext}
-                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
-              >
-                {currentIndex === currentQuestions.length - 1 ? "Finish" : "Next"}
-                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -248,6 +231,26 @@ export default function Quiz() {
                   <span className="ml-4 text-gray-900 font-medium">{option}</span>
                 </label>
               ))}
+            </div>
+
+            {/* Previous and Next Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Previous
+              </button>
+
+              <button
+                onClick={handleNext}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+              >
+                {currentIndex === currentQuestions.length - 1 ? "Finish" : "Next"}
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
 

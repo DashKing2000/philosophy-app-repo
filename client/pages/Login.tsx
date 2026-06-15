@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { BookOpen, Mail, Lock, AlertCircle, ArrowLeft } from "lucide-react";
+import { storage } from "@/lib/storage";
 
 // Google icon SVG component
 function GoogleIcon() {
@@ -46,8 +47,8 @@ export default function Login() {
     }
 
     try {
-      // Check if user exists in localStorage
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      // Check if user exists
+      const users = JSON.parse(storage.getItem("users") || "[]");
       const user = users.find((u: any) => u.email === email && u.password === password);
 
       if (!user) {
@@ -57,7 +58,7 @@ export default function Login() {
       }
 
       // Store current user session
-      localStorage.setItem("currentUser", JSON.stringify({ email: user.email, id: user.id }));
+      storage.setItem("currentUser", JSON.stringify({ email: user.email, id: user.id }));
       sessionStorage.setItem("authToken", `token_${user.id}`);
 
       setIsLoading(false);
@@ -74,7 +75,7 @@ export default function Login() {
 
     try {
       // Check if user exists with this email
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const users = JSON.parse(storage.getItem("users") || "[]");
 
       // For demo: simulate receiving Google email from OAuth
       const googleEmail = sessionStorage.getItem("googleEmail");
@@ -85,7 +86,7 @@ export default function Login() {
 
         if (existingUser) {
           // User already exists, log them in
-          localStorage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
+          storage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
           sessionStorage.setItem("authToken", `token_${existingUser.id}`);
           sessionStorage.removeItem("googleEmail");
           navigate("/");
@@ -100,7 +101,7 @@ export default function Login() {
 
         if (existingUser) {
           // Log in existing user
-          localStorage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
+          storage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
           sessionStorage.setItem("authToken", `token_${existingUser.id}`);
           navigate("/");
         } else {

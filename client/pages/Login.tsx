@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { BookOpen, Mail, Lock, AlertCircle } from "lucide-react";
+import { BookOpen, Mail, Lock, AlertCircle, ArrowLeft } from "lucide-react";
 
 // Google icon SVG component
 function GoogleIcon() {
@@ -119,6 +119,15 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      {/* Back Button */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Back
+      </Link>
+
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

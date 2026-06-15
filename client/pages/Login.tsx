@@ -73,35 +73,44 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Simulate Google OAuth - in production, this would use Google's OAuth 2.0 flow
-      // For demo purposes, we'll create a mock Google user
-      const googleEmail = "user+" + Math.random().toString(36).substring(7) + "@gmail.com";
-      const googleId = "google_" + Date.now().toString();
-
-      // Check if this Google account already exists
+      // Check if user exists with this email
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      let user = users.find((u: any) => u.email === googleEmail);
 
-      if (!user) {
-        // Create new Google user
-        user = {
-          id: googleId,
-          fullName: "Google User",
-          email: googleEmail,
-          password: "google_oauth",
-          loginMethod: "google",
-          createdAt: new Date().toISOString(),
-        };
-        users.push(user);
-        localStorage.setItem("users", JSON.stringify(users));
+      // For demo: simulate receiving Google email from OAuth
+      const googleEmail = sessionStorage.getItem("googleEmail");
+
+      if (googleEmail) {
+        // User came from signup with Google, check if they exist
+        const existingUser = users.find((u: any) => u.email === googleEmail);
+
+        if (existingUser) {
+          // User already exists, log them in
+          localStorage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
+          sessionStorage.setItem("authToken", `token_${existingUser.id}`);
+          sessionStorage.removeItem("googleEmail");
+          navigate("/");
+        } else {
+          // New user, redirect to signup
+          navigate("/signup");
+        }
+      } else {
+        // Regular Google login - generate email
+        const newEmail = "user+" + Math.random().toString(36).substring(7) + "@gmail.com";
+        const existingUser = users.find((u: any) => u.email === newEmail);
+
+        if (existingUser) {
+          // Log in existing user
+          localStorage.setItem("currentUser", JSON.stringify({ email: existingUser.email, id: existingUser.id, username: existingUser.username }));
+          sessionStorage.setItem("authToken", `token_${existingUser.id}`);
+          navigate("/");
+        } else {
+          // Store the Google email in session and redirect to signup
+          sessionStorage.setItem("googleEmail", newEmail);
+          navigate("/signup");
+        }
       }
 
-      // Store current user session
-      localStorage.setItem("currentUser", JSON.stringify({ email: user.email, id: user.id }));
-      sessionStorage.setItem("authToken", `token_${user.id}`);
-
       setIsLoading(false);
-      navigate("/");
     } catch (err) {
       setError("Failed to login with Google. Please try again.");
       setIsLoading(false);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { BookOpen, Mail, Lock, User, AlertCircle } from "lucide-react";
+import { BookOpen, Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 
 // Google icon SVG component
 function GoogleIcon() {
@@ -16,69 +16,102 @@ function GoogleIcon() {
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [step, setStep] = useState<"form" | "confirm">("form");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const validatePassword = (pwd: string) => {
+    const checks = {
+      uppercase: /[A-Z]/.test(pwd),
+      lowercase: /[a-z]/.test(pwd),
+      number: /[0-9]/.test(pwd),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd),
+      length: pwd.length >= 8,
+    };
+    return checks;
+  };
+
+  const passwordChecks = validatePassword(password);
+  const isPasswordValid =
+    passwordChecks.uppercase &&
+    passwordChecks.lowercase &&
+    passwordChecks.number &&
+    passwordChecks.special &&
+    passwordChecks.length;
+
+  const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
     // Validation
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!fullName || !username || !email || !password || !confirmPassword) {
       setError("Please fill in all fields");
-      setIsLoading(false);
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address");
-      setIsLoading(false);
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setIsLoading(false);
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      setError("Username must be 3-20 characters (letters, numbers, underscores only)");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setError("Password does not meet all requirements");
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      setIsLoading(false);
       return;
     }
 
+    // Check if email already exists
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (users.find((u: any) => u.email === email)) {
+      setError("Email already registered. Please log in instead.");
+      return;
+    }
+
+    if (users.find((u: any) => u.username === username)) {
+      setError("Username already taken. Please choose another.");
+      return;
+    }
+
+    // Move to confirmation step
+    setStep("confirm");
+  };
+
+  const handleSignup = async () => {
+    setIsLoading(true);
+
     try {
-      // Get existing users
       const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-      // Check if email already exists
-      if (users.find((u: any) => u.email === email)) {
-        setError("Email already registered. Please log in instead.");
-        setIsLoading(false);
-        return;
-      }
-
-      // Create new user
       const newUser = {
         id: Date.now().toString(),
         fullName,
+        username,
         email,
         password,
         createdAt: new Date().toISOString(),
       };
 
-      // Save user
       users.push(newUser);
       localStorage.setItem("users", JSON.stringify(users));
 
       // Auto-login
-      localStorage.setItem("currentUser", JSON.stringify({ email: newUser.email, id: newUser.id }));
+      localStorage.setItem("currentUser", JSON.stringify({ email: newUser.email, id: newUser.id, username: newUser.username }));
       sessionStorage.setItem("authToken", `token_${newUser.id}`);
 
       setIsLoading(false);
@@ -94,21 +127,18 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      // Simulate Google OAuth - in production, this would use Google's OAuth 2.0 flow
       const googleEmail = "user+" + Math.random().toString(36).substring(7) + "@gmail.com";
       const googleId = "google_" + Date.now().toString();
+      const googleUsername = "user_" + Math.random().toString(36).substring(7);
 
-      // Get existing users
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-
-      // Check if this Google account already exists
       let user = users.find((u: any) => u.email === googleEmail);
 
       if (!user) {
-        // Create new Google user
         user = {
           id: googleId,
           fullName: "Google User",
+          username: googleUsername,
           email: googleEmail,
           password: "google_oauth",
           loginMethod: "google",
@@ -118,8 +148,7 @@ export default function Signup() {
         localStorage.setItem("users", JSON.stringify(users));
       }
 
-      // Auto-login
-      localStorage.setItem("currentUser", JSON.stringify({ email: user.email, id: user.id }));
+      localStorage.setItem("currentUser", JSON.stringify({ email: user.email, id: user.id, username: user.username }));
       sessionStorage.setItem("authToken", `token_${user.id}`);
 
       setIsLoading(false);
@@ -147,7 +176,7 @@ export default function Signup() {
         {/* Signup Form */}
         <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Create Account
+            {step === "form" ? "Create Account" : "Confirm Your Details"}
           </h2>
 
           {/* Error Message */}
@@ -158,108 +187,246 @@ export default function Signup() {
             </div>
           )}
 
-          <form onSubmit={handleSignup} className="space-y-5">
-            {/* Full Name Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+          {step === "form" ? (
+            <form onSubmit={handleContinue} className="space-y-5">
+              {/* Full Name Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="John Doe"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Username Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Username
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="john_doe"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={isLoading}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">3-20 characters (letters, numbers, underscores)</p>
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+
+                {/* Password Requirements */}
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Password must contain:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordChecks.uppercase ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                      )}
+                      <span className={passwordChecks.uppercase ? "text-green-600 font-medium" : "text-gray-600"}>
+                        At least one uppercase letter (A-Z)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordChecks.lowercase ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                      )}
+                      <span className={passwordChecks.lowercase ? "text-green-600 font-medium" : "text-gray-600"}>
+                        At least one lowercase letter (a-z)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordChecks.number ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                      )}
+                      <span className={passwordChecks.number ? "text-green-600 font-medium" : "text-gray-600"}>
+                        At least one number (0-9)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordChecks.special ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                      )}
+                      <span className={passwordChecks.special ? "text-green-600 font-medium" : "text-gray-600"}>
+                        At least one special character (!@#$%^&* etc)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordChecks.length ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                      )}
+                      <span className={passwordChecks.length ? "text-green-600 font-medium" : "text-gray-600"}>
+                        At least 8 characters long
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {password && confirmPassword && password === confirmPassword && (
+                  <p className="text-xs text-green-600 font-medium mt-1">✓ Passwords match</p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !isPasswordValid || password !== confirmPassword}
+                className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-6"
+              >
+                {isLoading ? "Creating Account..." : "Continue"}
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              {/* Confirmation Summary */}
+              <div className="bg-blue-50 rounded-lg p-4 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Full Name</p>
+                  <p className="text-lg font-semibold text-gray-900">{fullName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Username</p>
+                  <p className="text-lg font-semibold text-gray-900">@{username}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Email</p>
+                  <p className="text-lg font-semibold text-gray-900">{email}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-600 text-center">
+                Please review your information above. Once you confirm, your account will be created.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setStep("form")}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleSignup}
                   disabled={isLoading}
-                />
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  {isLoading ? "Confirming..." : "Confirm & Sign Up"}
+                </button>
               </div>
             </div>
+          )}
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                  disabled={isLoading}
-                />
+          {step === "form" && (
+            <>
+              {/* Divider */}
+              <div className="flex items-center gap-4 my-8">
+                <div className="flex-1 h-px bg-gray-200"></div>
+                <p className="text-gray-500 text-sm font-medium">OR</p>
+                <div className="flex-1 h-px bg-gray-200"></div>
               </div>
-            </div>
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                  disabled={isLoading}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">At least 6 characters</p>
-            </div>
+              {/* Google Signup Button */}
+              <button
+                onClick={handleGoogleSignup}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 px-6 py-3 border-2 border-gray-200 text-gray-900 font-semibold rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <GoogleIcon />
+                {isLoading ? "Signing up..." : "Sign up with Google"}
+              </button>
+            </>
+          )}
+        </div>
 
-            {/* Confirm Password Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-6"
-            >
-              {isLoading ? "Creating Account..." : "Sign Up"}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <p className="text-gray-500 text-sm font-medium">OR</p>
-            <div className="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          {/* Google Signup Button */}
-          <button
-            onClick={handleGoogleSignup}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border-2 border-gray-200 text-gray-900 font-semibold rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <GoogleIcon />
-            {isLoading ? "Signing up..." : "Sign up with Google"}
-          </button>
-
-          {/* Login Link */}
+        {step === "form" && (
           <div className="text-center">
             <p className="text-gray-600 font-medium">
               Already have an account?{" "}
@@ -268,14 +435,16 @@ export default function Signup() {
               </Link>
             </p>
           </div>
-        </div>
+        )}
 
         {/* Terms Info */}
-        <div className="text-center text-xs text-gray-600">
-          <p>
-            By signing up, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </div>
+        {step === "form" && (
+          <div className="text-center text-xs text-gray-600 mt-6">
+            <p>
+              By signing up, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
